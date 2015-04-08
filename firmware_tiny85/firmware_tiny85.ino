@@ -1,8 +1,11 @@
 /*
-  firmware_tiny85.ino: Arduino sketch for the Programmable LM317 project.  See https://github.com/pepaslabs/ProgrammableLM317
+  firmware_tiny85.ino: Arduino sketch for the Programmable LM317 project.
+  See https://github.com/pepaslabs/ProgrammableLM317
   Copyright Jason Pepas (Pepas Labs, LLC)
   Released under the terms of the MIT License.  See http://opensource.org/licenses/MIT
 */
+
+// Hex file compiled using Arduino 1.6.1 for ATtiny85 is 8,116 bytes
 
 #define __STDC_LIMIT_MACROS
 #include <stdint.h>
@@ -39,10 +42,77 @@
 //                            +------+
 
 
+/*
+
+Serial terminal interface:
+
+Set the output voltage to 5 volts:
+
+    v5.000;
+
+Set the DAC output code to 37, no gain:
+
+    c37;
+    
+Set the DAC output code to 217, with 2x gain:
+
+    C217;
+
+Increase the DAC output by one LSB:
+
+    +;
+
+Decrease the DAC output by one LSB:
+
+    -;
+
+(Note: '+' and '-' do not alter the DAC gain bool.)
+
+
+Calibrate the (op amp) gain:
+
+    g4.3;
+
+Calibrate the LM317 VREF:
+
+    r1.25;
+
+Dump the current state:
+
+    ?;
+
+*/
+
+
+/*
+
+A note about DAC selection and the 'C' command:
+
+The 'c' and 'C' commands are relative to the resolution of the DAC.
+
+To set an MCP4801 (8-bit) DAC to max output voltage:
+
+    C255;
+
+To set an MCP4811 (10-bit) DAC to max output voltage:
+
+    C1023;
+
+To set an MCP4821 (12-bit) DAC to max output voltage:
+
+    C4095;
+
+*/    
+
+
+// Uncomment one of the following to choose your DAC:
+//DAC_config_t dac_config = MCP4801_config();
+//DAC_config_t dac_config = MCP4811_config();
+DAC_config_t dac_config = MCP4821_config();
+
+
 // --- DAC / SPI:
 
-
-DAC_config_t dac_config = MCP4821_config();
 
 DAC_data_t dac_data = { .config = &dac_config, .gain = false, .code = 0x0 };
 
@@ -67,45 +137,6 @@ SPI_device_t spi_dac = { .bus = &spi_bus,
 SoftwareSerial serial(RX_pin, TX_pin);
 
 
-/*
-
-Serial terminal interface:
-
-Set the output voltage to 5 volts:
-
-    v5.000;
-
-Set the DAC output code to 255, no gain:
-
-    c255;
-
-Set the DAC output code to 4095 (12-bit DAC), with 2x gain:
-
-    C4095;
-
-Increase the DAC output by one LSB:
-
-    +;
-
-Decrease the DAC output by one LSB:
-
-    -;
-
-Calibrate the (op amp) gain:
-
-    g4.3;
-
-Calibrate the LM317 VREF:
-
-    r1.25;
-
-Dump the current state:
-
-    ?;
-
-*/
-
-
 // --- buffer
 
 
@@ -120,6 +151,8 @@ char_buffer_t buffer = { .len = BUFF_LEN, .bytes = buffer_bytes };
 // --- globals
 
 
+// Default values.  These can be calibrated over the serial connection, and are
+// remembered via EEPROM.
 float LM317_vref = 1.25;
 float op_amp_gain = 4.3;
 
@@ -129,19 +162,19 @@ float op_amp_gain = 4.3;
 
 void setup()
 {
-  #ifdef HAS_EEPROM_BACKED_CALIBRATION_VALUES
-  {
-    bootstrap_EEPROM();
-  }
-  #endif
-  
-  serial.begin(9600);
+  serial.begin(9600); // 9600 8N1
 
   #ifdef HAS_BOOT_MESSAGE
   {
     delay(10);
     serial.print("LM317 OK;");
     serial.flush();
+  }
+  #endif
+  
+  #ifdef HAS_EEPROM_BACKED_CALIBRATION_VALUES
+  {
+    bootstrap_EEPROM();
   }
   #endif
   
@@ -202,7 +235,12 @@ void loop()
     #ifdef HAS_CODE_COMMAND
     case COMMAND_SET_CODE:
     {
-      error = parse_and_run_code_command(&buffer, &dac_data, &spi_dac);
+      error = parse_and_run_code_command(&buffer, &dac_data, &spi_dac, false);
+      break;
+    }
+    case COMMAND_SET_CODE_W_GAIN:
+    {
+      error = parse_and_run_code_command(&buffer, &dac_data, &spi_dac, true);
       break;
     }
     #endif
@@ -355,6 +393,10 @@ command_t read_command(SoftwareSerial *serial, char_buffer_t *buffer)
     {
       return COMMAND_SET_CODE;
     }
+    case 'C':
+    {
+      return COMMAND_SET_CODE_W_GAIN;
+    }
     #endif
     
     #ifdef HAS_CALIBRATE_OP_AMP_GAIN_COMMAND
@@ -368,6 +410,13 @@ command_t read_command(SoftwareSerial *serial, char_buffer_t *buffer)
     case 'r':
     {
       return COMMAND_CALIBRATE_LM317_VREF;
+    }
+    #endif
+    
+    #ifdef HAS_DUMP_COMMAND
+    case '?':
+    {
+      return COMMAND_DUMP;
     }
     #endif
     
@@ -483,7 +532,7 @@ error_t parse_and_run_voltage_command(char_buffer_t *buffer, DAC_data_t *dac_dat
 
 
 #ifdef HAS_CODE_COMMAND
-error_t parse_and_run_code_command(char_buffer_t *buffer, DAC_data_t *dac_data, SPI_device_t *spi_dac)
+error_t parse_and_run_code_command(char_buffer_t *buffer, DAC_data_t *dac_data, SPI_device_t *spi_dac, bool use_gain)
 {
   uint16_t new_code = atoi(buffer->bytes);
 
@@ -500,6 +549,8 @@ error_t parse_and_run_code_command(char_buffer_t *buffer, DAC_data_t *dac_data, 
   {
     return ERROR_PARSED_CODE_OUTSIDE_SUPPORTED_RANGE;
   }
+  
+  dac_data->gain = use_gain;
   
   send_dac_data(dac_data, spi_dac);
   return OK_NO_ERROR;
@@ -596,6 +647,7 @@ void printSuccess(command_t command)
 #ifdef HAS_DUMP_COMMAND
 error_t dump(DAC_data_t *dac_data)
 {
+  serial.println();
   serial.print("DAC code: ");
   serial.println(dac_data->code);
   serial.print("DAC gain: ");
