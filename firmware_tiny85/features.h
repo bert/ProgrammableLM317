@@ -28,4 +28,6 @@
 
 #define HAS_DUMP_COMMAND
 
+#define HAS_RUNTIME_VERBOSITY_CONFIG
+
 #endif

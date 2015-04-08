@@ -5,7 +5,7 @@
   Released under the terms of the MIT License.  See http://opensource.org/licenses/MIT
 */
 
-// Hex file compiled using Arduino 1.6.1 for ATtiny85 is 8,116 bytes
+// Hex file compiled using Arduino 1.6.1 for ATtiny85 is 8,164 bytes (of 8,192 max)
 
 #define __STDC_LIMIT_MACROS
 #include <stdint.h>
@@ -44,42 +44,50 @@
 
 /*
 
-Serial terminal interface:
+Serial commands:
 
-Set the output voltage to 5 volts:
+'v': Set the output voltage to 5 volts:
 
     v5.000;
 
-Set the DAC output code to 37, no gain:
+'c': Set the DAC output code to 37, no gain:
 
     c37;
     
-Set the DAC output code to 217, with 2x gain:
+'C': Set the DAC output code to 217, with 2x gain:
 
     C217;
 
-Increase the DAC output by one LSB:
+'+': Increase the DAC output by one LSB:
 
     +;
 
-Decrease the DAC output by one LSB:
+'-': Decrease the DAC output by one LSB:
 
     -;
 
 (Note: '+' and '-' do not alter the DAC gain bool.)
 
 
-Calibrate the (op amp) gain:
+'g': Calibrate the (op amp) gain:
 
     g4.3;
 
-Calibrate the LM317 VREF:
+'r': Calibrate the LM317 VREF:
 
     r1.25;
 
-Dump the current state:
+'?': Dump the current state:
 
     ?;
+
+'d': Disable verbose debug output (default):
+
+    d;
+
+'D': Enable verbose debug output:
+
+    D;
 
 */
 
@@ -156,6 +164,10 @@ char_buffer_t buffer = { .len = BUFF_LEN, .bytes = buffer_bytes };
 float LM317_vref = 1.25;
 float op_amp_gain = 4.3;
 
+
+#ifdef HAS_RUNTIME_VERBOSITY_CONFIG
+bool verbose = false;
+#endif
 
 // ---
 
@@ -265,6 +277,21 @@ void loop()
     case COMMAND_DUMP:
     {
       error = dump(&dac_data);
+      break;
+    }
+    #endif
+
+    #ifdef HAS_RUNTIME_VERBOSITY_CONFIG
+    case COMMAND_DISABLE_VERBOSE_DEBUG_OUTPUT:
+    {
+      verbose = false;
+      error = OK_NO_ERROR;
+      break;
+    }
+    case COMMAND_ENABLE_VERBOSE_DEBUG_OUTPUT:
+    {
+      verbose = true;
+      error = OK_NO_ERROR;
       break;
     }
     #endif
@@ -419,7 +446,18 @@ command_t read_command(SoftwareSerial *serial, char_buffer_t *buffer)
       return COMMAND_DUMP;
     }
     #endif
-    
+
+    #ifdef HAS_RUNTIME_VERBOSITY_CONFIG
+    case 'd':
+    {
+      return COMMAND_DISABLE_VERBOSE_DEBUG_OUTPUT;
+    }
+    case 'D':
+    {
+      return COMMAND_ENABLE_VERBOSE_DEBUG_OUTPUT;
+    }
+    #endif
+
     default:
     {
       return ERROR_UNKNOWN_COMMAND;
@@ -501,14 +539,17 @@ error_t decrement_output_voltage(DAC_data_t *dac_data, SPI_device_t *spi_dac)
 error_t parse_and_run_voltage_command(char_buffer_t *buffer, DAC_data_t *dac_data, SPI_device_t *spi_dac)
 {
   float output_volts = atof(buffer->bytes);
-  
+
+  #ifdef HAS_RUNTIME_VERBOSITY_CONFIG  
   #ifdef HAS_VOLTS_COMMAND_DEBUGGING
+  if (verbose == true)
   {
     serial.println();
     serial.print("parsed volts: ");
     serial.println(output_volts, 4);
     serial.flush();
   }
+  #endif
   #endif
 
   if (output_volts < 0)
@@ -536,13 +577,16 @@ error_t parse_and_run_code_command(char_buffer_t *buffer, DAC_data_t *dac_data, 
 {
   uint16_t new_code = atoi(buffer->bytes);
 
+  #ifdef HAS_RUNTIME_VERBOSITY_CONFIG  
   #ifdef HAS_CODE_COMMAND_DEBUGGING
+  if (verbose == true)
   {
     serial.println();
     serial.print("parsed code: ");
     serial.println(new_code);
     serial.flush();
   }
+  #endif
   #endif
 
   if (dac_data_set_code(dac_data, new_code) == false)
@@ -563,13 +607,16 @@ error_t parse_and_run_calibrate_gain_command(char_buffer_t *buffer, DAC_data_t *
 {
   float new_gain = atof(buffer->bytes);
   
+  #ifdef HAS_RUNTIME_VERBOSITY_CONFIG  
   #ifdef HAS_CALIBRATE_OP_AMP_GAIN_COMMAND_DEBUGGING
+  if (verbose == true)
   {
     serial.println();
     serial.print("parsed gain: ");
     serial.println(new_gain, 4);
     serial.flush();
   }
+  #endif
   #endif
   
   if (new_gain < 1.0)
@@ -595,13 +642,16 @@ error_t parse_and_run_calibrate_vref_command(char_buffer_t *buffer, DAC_data_t *
 {
   float new_vref = atof(buffer->bytes);
   
+  #ifdef HAS_RUNTIME_VERBOSITY_CONFIG  
   #ifdef HAS_CALIBRATE_LM317_VREF_COMMAND_DEBUGGING
+  if (verbose == true)
   {
     serial.println();
     serial.print("parsed vref: ");
     serial.println(new_vref, 4);
     serial.flush();
   }
+  #endif
   #endif
   
   if (new_vref < 0)
