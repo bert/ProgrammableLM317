@@ -1,4 +1,4 @@
-PCBNEW-LibModule-V1  3/19/2015 1:40:47 AM
+PCBNEW-LibModule-V1  4/8/2015 5:06:50 PM
 # encoding utf-8
 Units mm
 $INDEX
@@ -634,7 +634,7 @@ Po 0 0
 $EndPAD
 $EndMODULE Banana_A
 $MODULE TERMINAL_BLOCK_2_5mm
-Po 0 0 0 15 550A7C6D 00000000 ~~
+Po 0 0 0 15 5525C287 00000000 ~~
 Li TERMINAL_BLOCK_2_5mm
 Cd 2 pin terminal block, 5mm spacing
 Kw CONN DEV
@@ -666,6 +666,13 @@ Dr 1.016 0 0
 At STD N 00E0FFFF
 Ne 0 ""
 Po 2.54 0
+$EndPAD
+$PAD
+Sh "2" C 1.7526 1.7526 0 0 0
+Dr 1.016 0 0
+At STD N 00E0FFFF
+Ne 0 ""
+Po 0 0
 $EndPAD
 $SHAPE3D
 Na "pin_array/pins_array_2x1.wrl"
