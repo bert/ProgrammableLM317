@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by CvPcb (2013-07-07 BZR 4022)-stable date = 4/8/2015 4:25:57 PM
+Cmp-Mod V01 Created by CvPcb (2013-07-07 BZR 4022)-stable date = 4/8/2015 5:51:58 PM
 
 BeginCmp
 TimeStamp = /550F907E;
@@ -18,21 +18,21 @@ BeginCmp
 TimeStamp = /550F9257;
 Reference = C3;
 ValeurCmp = 0.1uF;
-IdModule  = CERCAP_2_059A;
+IdModule  = CERCAP_2_059B_0805;
 EndCmp
 
 BeginCmp
 TimeStamp = /550F99AE;
 Reference = C4;
 ValeurCmp = 0.1uF;
-IdModule  = CERCAP_2_059A;
+IdModule  = CERCAP_2_059B_0805;
 EndCmp
 
 BeginCmp
 TimeStamp = /5525B83E;
 Reference = C5;
 ValeurCmp = 0.1uF;
-IdModule  = CERCAP_2_059A;
+IdModule  = CERCAP_2_059B_0805;
 EndCmp
 
 BeginCmp
@@ -46,21 +46,21 @@ BeginCmp
 TimeStamp = /550F97D7;
 Reference = C7;
 ValeurCmp = 0.1uF;
-IdModule  = CERCAP_2_059A;
+IdModule  = CERCAP_2_059B_0805;
 EndCmp
 
 BeginCmp
 TimeStamp = /551262B6;
 Reference = C8;
 ValeurCmp = 0.1uF;
-IdModule  = CERCAP_2_059A;
+IdModule  = CERCAP_2_059B_0805;
 EndCmp
 
 BeginCmp
 TimeStamp = /55126430;
 Reference = C9;
 ValeurCmp = 0.1uF;
-IdModule  = CERCAP_2_059A;
+IdModule  = CERCAP_2_059B_0805;
 EndCmp
 
 BeginCmp
