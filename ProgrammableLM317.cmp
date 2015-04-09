@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by CvPcb (2013-07-07 BZR 4022)-stable date = 3/25/2015 9:21:19 PM
+Cmp-Mod V01 Created by CvPcb (2013-07-07 BZR 4022)-stable date = 4/8/2015 4:25:57 PM
 
 BeginCmp
 TimeStamp = /550F907E;
@@ -29,6 +29,13 @@ IdModule  = CERCAP_2_059A;
 EndCmp
 
 BeginCmp
+TimeStamp = /5525B83E;
+Reference = C5;
+ValeurCmp = 0.1uF;
+IdModule  = CERCAP_2_059A;
+EndCmp
+
+BeginCmp
 TimeStamp = /550F9688;
 Reference = C6;
 ValeurCmp = 10uF;
@@ -52,20 +59,6 @@ EndCmp
 BeginCmp
 TimeStamp = /55126430;
 Reference = C9;
-ValeurCmp = 0.1uF;
-IdModule  = CERCAP_2_059A;
-EndCmp
-
-BeginCmp
-TimeStamp = /5512613C;
-Reference = C10;
-ValeurCmp = 0.1uF;
-IdModule  = CERCAP_2_059A;
-EndCmp
-
-BeginCmp
-TimeStamp = /551265B1;
-Reference = C11;
 ValeurCmp = 0.1uF;
 IdModule  = CERCAP_2_059A;
 EndCmp
@@ -141,6 +134,13 @@ IdModule  = TERMINAL_BLOCK_2_5mm;
 EndCmp
 
 BeginCmp
+TimeStamp = /5525B73B;
+Reference = P3;
+ValeurCmp = CONN_2;
+IdModule  = PIN_ARRAY_2X1;
+EndCmp
+
+BeginCmp
 TimeStamp = /550F91CC;
 Reference = R1;
 ValeurCmp = 10k;
@@ -158,6 +158,13 @@ BeginCmp
 TimeStamp = /5512775D;
 Reference = R3;
 ValeurCmp = 220;
+IdModule  = R_AXIAL_0W25_059A;
+EndCmp
+
+BeginCmp
+TimeStamp = /5525B9E4;
+Reference = R4;
+ValeurCmp = 100k;
 IdModule  = R_AXIAL_0W25_059A;
 EndCmp
 
